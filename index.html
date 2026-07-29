@@ -1,13 +1,165 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Landing Google Ads</title>
-</head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Image Showcase</title>
+  <link rel="stylesheet" href="style.css">
 
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17418180371"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-17418180371');
+  </script>
+
+  <!-- Event snippet for Page view conversion page -->
+  <script>
+    gtag('event', 'conversion', {
+        'send_to': 'AW-17418180371/6oTQCIzE4_waEJOu0fFA',
+        'value': 1.0,
+        'currency': 'IDR'
+    });
+  </script>
+
+  <!-- SCRIPT TRACKING ADVANCED SPREADSHEET & WHATSAPP -->
+  <script>
+    // 1. LINK WEBHOOK GOOGLE APPS SCRIPT
+    const GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/library/d/1scAGrONrdXiyPc6cfOuLcb6K5aeSzSs-oOV8OSyaosSdu985tTik5P5v/1";
+
+    // 2. NOMOR WHATSAPP KAMU
+    const WA_NUMBER = "6282277790619";
+    const WA_TEXT = "Halo Kak, saya berminat dengan produknya.";
+
+    // Helper: Ambil Parameter dari URL
+    const urlParams = new URLSearchParams(window.location.search);
+    function getParam(key) {
+      let val = urlParams.get(key);
+      if (val) {
+        sessionStorage.setItem('track_' + key, val);
+        return val;
+      }
+      return sessionStorage.getItem('track_' + key) || '-';
+    }
+
+    // Parser Browser, OS, & Model Perangkat
+    function parseUA() {
+      const ua = navigator.userAgent;
+      let os = "Unknown OS";
+      let browser = "Unknown Browser";
+      let model = "Desktop/Generic";
+
+      // OS
+      if (/windows nt/i.test(ua)) os = "Windows";
+      else if (/android/i.test(ua)) os = "Android";
+      else if (/iphone|ipad|ipod/i.test(ua)) os = "iOS";
+      else if (/mac os x/i.test(ua)) os = "macOS";
+      else if (/linux/i.test(ua)) os = "Linux";
+
+      // Browser
+      if (/chrome|crios/i.test(ua) && !/edge|edg|opr|opera/i.test(ua)) browser = "Chrome";
+      else if (/safari/i.test(ua) && !/chrome|crios/i.test(ua)) browser = "Safari";
+      else if (/firefox|fxios/i.test(ua)) browser = "Firefox";
+      else if (/edge|edg/i.test(ua)) browser = "Edge";
+      else if (/opr|opera/i.test(ua)) browser = "Opera";
+
+      // Model Device
+      if (/iphone/i.test(ua)) model = "Apple iPhone";
+      else if (/ipad/i.test(ua)) model = "Apple iPad";
+      else if (/android/i.test(ua)) {
+        const match = ua.match(/Android\s+[\d\.]+;\s*([^;\)]+)/i);
+        model = match ? match[1] : "Android Device";
+      }
+
+      return { os, browser, model };
+    }
+
+    // Eksekusi Pengiriman Data ke Spreadsheet & Redirect ke WA
+    async function handleWAClick(event) {
+      if (event) event.preventDefault();
+
+      const uaData = parseUA();
+      const now = new Date();
+      const clickId = "CLK-" + now.getTime() + "-" + Math.floor(Math.random() * 1000);
+      const formattedDate = now.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB";
+
+      const payload = {
+        clickId: clickId,
+        waktu: formattedDate,
+        gclid: getParam('gclid'),
+        gbraid: getParam('gbraid'),
+        wbraid: getParam('wbraid'),
+        campaignId: getParam('campaignid') || getParam('utm_campaign'),
+        adGroupId: getParam('adgroupid') || getParam('utm_content'),
+        keyword: getParam('keyword') || getParam('utm_term'),
+        matchType: getParam('matchtype'),
+        device: getParam('device') || (window.innerWidth <= 768 ? 'Mobile' : 'Desktop'),
+        modelDevice: uaData.model,
+        browser: uaData.browser,
+        os: uaData.os,
+        screen: window.screen.width + "x" + window.screen.height,
+        bahasa: navigator.language || navigator.userLanguage || '-',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '-',
+        landingPage: window.location.href,
+        referrer: document.referrer || 'Direct',
+        nomorWA: WA_NUMBER,
+        userAgent: navigator.userAgent,
+        status: 'Klik WhatsApp',
+        catatan: 'Konversi Landing Page'
+      };
+
+      // Kirim Data ke Google Sheet via Webhook
+      if (GOOGLE_SHEET_WEBHOOK_URL) {
+        try {
+          await fetch(GOOGLE_SHEET_WEBHOOK_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {
+          console.error("Gagal kirim data:", err);
+        }
+      }
+
+      // Redirect ke WhatsApp
+      const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_TEXT)}`;
+      window.open(waUrl, '_blank');
+    }
+  </script>
+</head>
 <body>
 
-<h1>Landing Google Ads Berhasil</h1>
+  <div class="image-container">
+    <div class="img-wrapper"><img src="img/1.webp" alt="Image 1"></div>
+    <div class="img-wrapper"><img src="img/2.webp" alt="Image 2"></div>
+    <div class="img-wrapper"><img src="img/3.webp" alt="Image 3"></div>
+    
+    <!-- Tombol WhatsApp 1 -->
+    <div class="img-wrapper">
+      <a href="#" onclick="handleWAClick(event)">
+        <img src="img/4.gif" alt="Tombol WhatsApp 1">
+      </a>
+    </div>
+
+    <div class="img-wrapper"><img src="img/5.webp" alt="Image 5"></div>
+    <div class="img-wrapper"><img src="img/6.webp" alt="Image 6"></div>
+    <div class="img-wrapper"><img src="img/7.webp" alt="Image 7"></div>
+    <div class="img-wrapper"><img src="img/8.webp" alt="Image 8"></div>
+
+    <!-- Tombol WhatsApp 2 -->
+    <div class="img-wrapper">
+      <a href="#" onclick="handleWAClick(event)">
+        <img src="img/9.gif" alt="Tombol WhatsApp 2">
+      </a>
+    </div>
+
+    <div class="img-wrapper"><img src="img/10.webp" alt="Image 10"></div>
+    <div class="img-wrapper"><img src="img/11.webp" alt="Image 11"></div>
+    <div class="img-wrapper"><img src="img/12.webp" alt="Image 12"></div>
+  </div>
 
 </body>
 </html>
