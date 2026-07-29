@@ -4,7 +4,48 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Image Showcase</title>
-  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* STYLE DASAR - TAMPILAN HP (MOBILE FIRST) */
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      background-color: #f4f4f4; /* Latar belakang abu-abu muda agar gambar menonjol */
+    }
+
+    .image-container {
+      width: 100%;
+      max-width: 100%; /* Lebar penuh di HP */
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Rata tengah */
+      margin: 0 auto;
+      background-color: #fff;
+    }
+
+    .img-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    .img-wrapper img {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* MEDIA QUERY - TAMPILAN DEKTOP / TABLET */
+    @media (min-width: 768px) {
+      .image-container {
+        max-width: 450px; /* Gambar diperkecil khusus di layar besar */
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Tambahan bayangan agar terlihat rapi seperti mockup HP */
+      }
+    }
+  </style>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17418180371"></script>
@@ -24,13 +65,16 @@
     });
   </script>
 
-  <!-- ================= SKRIP REKAM GCLID & GOOGLE SHEETS ================= -->
+  <!-- SCRIPT TRACKING REKAM DATA -->
   <script>
-    const GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/library/d/1scAGrONrdXiyPc6cfOuLcb6K5aeSzSs-oOV8OSyaosSdu985tTik5P5v/1";
+    // URL WEBHOOK APPS SCRIPT YANG BENAR (Berakhiran /exec)
+    const GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx1uJPGtOrGNp1FD7rP6rmAa20_qGrjhOl5oiCK4QlUrQVH-jWL3fG-gjRz0Lu02VTf/exec";
+    
+    // NOMOR WA KAMU
     const WA_NUMBER = "6282277790619";
     const WA_TEXT = "Halo Kak, saya berminat dengan produknya.";
 
-    // Simpan GCLID & Parameter Iklan dari URL
+    // Ambil Parameter URL (GCLID, dsb)
     const urlParams = new URLSearchParams(window.location.search);
     function getParam(key) {
       let val = urlParams.get(key);
@@ -41,7 +85,7 @@
       return sessionStorage.getItem('track_' + key) || '-';
     }
 
-    // Tangkap data Perangkat
+    // Detector Device & OS
     function parseUA() {
       const ua = navigator.userAgent;
       let os = "Unknown OS", browser = "Unknown Browser", model = "Desktop/Generic";
@@ -64,8 +108,8 @@
       return { os, browser, model };
     }
 
-    // Fungsi Utama: Rekam Data + Buka WA
-    async function trackAndRedirect(event) {
+    // Rekam & Redirect ke WhatsApp
+    function trackAndRedirect(event) {
       if (event) event.preventDefault();
 
       const uaData = parseUA();
@@ -98,48 +142,57 @@
         catatan: 'Konversi Landing Page'
       };
 
-      // Kirim Data ke Google Sheet
+      const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_TEXT)}`;
+
+      // Kirim Data menggunakan navigator.sendBeacon (sangat cepat & tidak mengganggu alur ke WA)
       if (GOOGLE_SHEET_WEBHOOK_URL) {
         try {
-          await fetch(GOOGLE_SHEET_WEBHOOK_URL, {
+          const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain' });
+          navigator.sendBeacon(GOOGLE_SHEET_WEBHOOK_URL, blob);
+        } catch (err) {
+          // Fallback jika sendBeacon gagal
+          fetch(GOOGLE_SHEET_WEBHOOK_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
-        } catch (err) {
-          console.error("Error kirim data:", err);
         }
       }
 
-      // Langsung Buka Chat WhatsApp
-      window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_TEXT)}`, '_blank');
+      // Langsung buka WhatsApp
+      window.open(waUrl, '_blank');
     }
   </script>
-  <!-- ===================================================================== -->
 </head>
 <body>
+
   <div class="image-container">
     <div class="img-wrapper"><img src="img/1.webp" alt="Image 1"></div>
     <div class="img-wrapper"><img src="img/2.webp" alt="Image 2"></div>
     <div class="img-wrapper"><img src="img/3.webp" alt="Image 3"></div>
+    
     <div class="img-wrapper">
       <a href="#" onclick="trackAndRedirect(event)">
         <img src="img/4.gif" alt="Tombol WhatsApp 1">
       </a>
     </div>
+
     <div class="img-wrapper"><img src="img/5.webp" alt="Image 5"></div>
-	<div class="img-wrapper"><img src="img/6.webp" alt="Image 6"></div>
-	<div class="img-wrapper"><img src="img/7.webp" alt="Image 7"></div>
+    <div class="img-wrapper"><img src="img/6.webp" alt="Image 6"></div>
+    <div class="img-wrapper"><img src="img/7.webp" alt="Image 7"></div>
     <div class="img-wrapper"><img src="img/8.webp" alt="Image 8"></div>
+    
     <div class="img-wrapper">
       <a href="#" onclick="trackAndRedirect(event)">
         <img src="img/9.gif" alt="Tombol WhatsApp 2">
       </a>
     </div>
+
     <div class="img-wrapper"><img src="img/10.webp" alt="Image 10"></div>
     <div class="img-wrapper"><img src="img/11.webp" alt="Image 11"></div>
     <div class="img-wrapper"><img src="img/12.webp" alt="Image 12"></div>
   </div>
+
 </body>
 </html>
