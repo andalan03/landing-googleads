@@ -50,7 +50,7 @@
     }
   </style>
 
-  <!-- SCRIPT TRACKING KOMPATIBEL BROWSER LAMA (ES5) -->
+  <!-- SCRIPT TRACKING BULLETPROOF UNTUK BROWSER LAMA -->
   <script>
     var GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbw1ASwQnLVm-sAjf-v7k9Kftdr0yrP_UOgv7jKGfATEL2wUpqCf0Qc0__BlsHage1Aw/exec";
     var WA_NUMBER = "6282277790619";
@@ -58,7 +58,6 @@
 
     var visitorDataCache = { ip: '-', city: '-' };
 
-    // Cek dukungan fetch untuk browser lama
     if (window.fetch) {
       window.addEventListener('DOMContentLoaded', function() {
         fetch('https://ipapi.co/json/')
@@ -67,18 +66,15 @@
             visitorDataCache.ip = data.ip || '-';
             visitorDataCache.city = (data.city && data.region) ? (data.city + ', ' + data.region) : (data.city || '-');
           })
-          .catch(function(err) { console.log('IP fetch failed:', err); });
+          .catch(function(err) {});
       });
     }
 
-    // Fungsi pengurai URL manual yang aman untuk browser lama (pengganti URLSearchParams)
     function getQueryParam(key) {
       var match = RegExp('[?&]' + key + '=([^&]*)').exec(window.location.search);
       var val = match && decodeURIComponent(match[1].replace(/\+/g, ' '));
       if (val) {
-        try {
-          sessionStorage.setItem('track_' + key, val);
-        } catch(e) {}
+        try { sessionStorage.setItem('track_' + key, val); } catch(e) {}
         return val;
       }
       try {
@@ -114,12 +110,7 @@
       return { os: os, browser: browser, model: model };
     }
 
-    function trackAndRedirect(event) {
-      if (event) {
-        if (event.preventDefault) event.preventDefault();
-        else event.returnValue = false;
-      }
-
+    function trackClick() {
       var uaData = parseUA();
       var now = new Date();
       var clickId = "CLK-" + now.getTime() + "-" + Math.floor(Math.random() * 1000);
@@ -154,7 +145,6 @@
         perangkatBrowser: perangkatBrowser
       };
 
-      // Konversi payload ke string query secara manual (kompatibel ES5)
       var queryParts = [];
       for (var key in payload) {
         if (payload.hasOwnProperty(key)) {
@@ -163,34 +153,29 @@
       }
       var queryString = queryParts.join("&");
 
-      // Kirim data latar belakang menggunakan Image Beacon
+      // Kirim data latar belakang secara instan tanpa memblokir navigasi link
       if (GOOGLE_SHEET_WEBHOOK_URL) {
         var beacon = new Image();
         beacon.src = GOOGLE_SHEET_WEBHOOK_URL + "?" + queryString;
       }
-
-      // Alihkan langsung ke WhatsApp
-      var waUrl = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(WA_TEXT);
-      window.location.href = waUrl;
-      return false;
     }
   </script>
 </head>
 <body>
 
   <div class="image-container">
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/1.webp" alt="Image 1"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/2.webp" alt="Image 2"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/3.webp" alt="Image 3"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/4.webp" alt="Image 4"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/5.webp" alt="Image 5"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/6.webp" alt="Image 6"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/7.webp" alt="Image 7"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/8.webp" alt="Image 8"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/9.webp" alt="Image 9"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/10.webp" alt="Image 10"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/11.webp" alt="Image 11"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/12.webp" alt="Image 12"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/1.webp" alt="Image 1"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/2.webp" alt="Image 2"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/3.webp" alt="Image 3"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/4.webp" alt="Image 4"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/5.webp" alt="Image 5"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/6.webp" alt="Image 6"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/7.webp" alt="Image 7"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/8.webp" alt="Image 8"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/9.webp" alt="Image 9"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/10.webp" alt="Image 10"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/11.webp" alt="Image 11"></a></div>
+    <div class="img-wrapper"><a href="https://wa.me/6282277790619?text=Halo%20Kak,%20saya%20berminat%20dengan%20produknya." onclick="trackClick()"><img src="img/12.webp" alt="Image 12"></a></div>
   </div>
 
 </body>
