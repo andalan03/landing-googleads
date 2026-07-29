@@ -6,21 +6,20 @@
   <title>Image Showcase</title>
   
   <style>
-    /* STYLE DASAR - TAMPILAN HP (MOBILE FIRST) */
     body {
       margin: 0;
       padding: 0;
       display: flex;
       justify-content: center;
-      background-color: #f4f4f4; /* Latar belakang abu-abu muda agar gambar menonjol */
+      background-color: #f4f4f4;
     }
 
     .image-container {
       width: 100%;
-      max-width: 100%; /* Lebar penuh di HP */
+      max-width: 100%;
       display: flex;
       flex-direction: column;
-      align-items: center; /* Rata tengah */
+      align-items: center;
       margin: 0 auto;
       background-color: #fff;
     }
@@ -38,11 +37,10 @@
       margin: 0 auto;
     }
 
-    /* MEDIA QUERY - TAMPILAN DEKTOP / TABLET */
     @media (min-width: 768px) {
       .image-container {
-        max-width: 450px; /* Gambar diperkecil khusus di layar besar */
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Tambahan bayangan agar terlihat rapi seperti mockup HP */
+        max-width: 450px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       }
     }
   </style>
@@ -65,16 +63,26 @@
     });
   </script>
 
-  <!-- SCRIPT TRACKING REKAM DATA -->
+  <!-- SCRIPT TRACKING LENGKAP -->
   <script>
-    // URL WEBHOOK APPS SCRIPT YANG BENAR (Berakhiran /exec)
     const GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx1uJPGtOrGNp1FD7rP6rmAa20_qGrjhOl5oiCK4QlUrQVH-jWL3fG-gjRz0Lu02VTf/exec";
-    
-    // NOMOR WA KAMU
     const WA_NUMBER = "6282277790619";
     const WA_TEXT = "Halo Kak, saya berminat dengan produknya.";
 
-    // Ambil Parameter URL (GCLID, dsb)
+    // Cache untuk IP dan Lokasi agar cepat saat tombol diklik
+    let visitorDataCache = { ip: '-', city: '-' };
+
+    // Ambil IP dan Kota di latar belakang saat halaman dimuat
+    window.addEventListener('DOMContentLoaded', () => {
+      fetch('https://ipapi.co/json/')
+        .then(res => res.json())
+        .then(data => {
+          visitorDataCache.ip = data.ip || '-';
+          visitorDataCache.city = (data.city && data.region) ? `${data.city}, ${data.region}` : (data.city || '-');
+        })
+        .catch(err => console.log('IP fetch failed:', err));
+    });
+
     const urlParams = new URLSearchParams(window.location.search);
     function getParam(key) {
       let val = urlParams.get(key);
@@ -85,7 +93,6 @@
       return sessionStorage.getItem('track_' + key) || '-';
     }
 
-    // Detector Device & OS
     function parseUA() {
       const ua = navigator.userAgent;
       let os = "Unknown OS", browser = "Unknown Browser", model = "Desktop/Generic";
@@ -100,6 +107,7 @@
       else if (/firefox|fxios/i.test(ua)) browser = "Firefox";
 
       if (/iphone/i.test(ua)) model = "Apple iPhone";
+      else if (/ipad/i.test(ua)) model = "Apple iPad";
       else if (/android/i.test(ua)) {
         const match = ua.match(/Android\s+[\d\.]+;\s*([^;\)]+)/i);
         model = match ? match[1] : "Android Device";
@@ -108,7 +116,6 @@
       return { os, browser, model };
     }
 
-    // Rekam & Redirect ke WhatsApp
     function trackAndRedirect(event) {
       if (event) event.preventDefault();
 
@@ -116,6 +123,7 @@
       const now = new Date();
       const clickId = "CLK-" + now.getTime() + "-" + Math.floor(Math.random() * 1000);
       const formattedDate = now.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB";
+      const perangkatBrowser = `${uaData.model} / ${uaData.browser} (${uaData.os})`;
 
       const payload = {
         clickId: clickId,
@@ -139,18 +147,19 @@
         nomorWA: WA_NUMBER,
         userAgent: navigator.userAgent,
         status: 'Klik WhatsApp',
-        catatan: 'Konversi Landing Page'
+        catatan: 'Konversi Landing Page',
+        ipAddress: visitorDataCache.ip,
+        lokasi: visitorDataCache.city,
+        perangkatBrowser: perangkatBrowser
       };
 
       const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_TEXT)}`;
 
-      // Kirim Data menggunakan navigator.sendBeacon (sangat cepat & tidak mengganggu alur ke WA)
       if (GOOGLE_SHEET_WEBHOOK_URL) {
         try {
           const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain' });
           navigator.sendBeacon(GOOGLE_SHEET_WEBHOOK_URL, blob);
         } catch (err) {
-          // Fallback jika sendBeacon gagal
           fetch(GOOGLE_SHEET_WEBHOOK_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -160,7 +169,6 @@
         }
       }
 
-      // Langsung buka WhatsApp
       window.open(waUrl, '_blank');
     }
   </script>
