@@ -50,7 +50,7 @@
     }
   </style>
 
-  <!-- SCRIPT TRACKING UNTUK KONVERSI OFFLINE (GOOGLE SHEETS) -->
+  <!-- SCRIPT TRACKING KONVERSI OFFLINE & REDIRECT AMAN -->
   <script>
     const GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbw1ASwQnLVm-sAjf-v7k9Kftdr0yrP_UOgv7jKGfATEL2wUpqCf0Qc0__BlsHage1Aw/exec";
     const WA_NUMBER = "6282277790619";
@@ -138,16 +138,16 @@
         perangkatBrowser: perangkatBrowser
       };
 
+      // Kirim data latar belakang via Image Beacon
       if (GOOGLE_SHEET_WEBHOOK_URL) {
         const queryString = new URLSearchParams(payload).toString();
         const beacon = new Image();
         beacon.src = GOOGLE_SHEET_WEBHOOK_URL + "?" + queryString;
       }
 
+      // Alihkan langsung ke WhatsApp secara instan tanpa jeda agar lolos dari blokir browser lama
       const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_TEXT)}`;
-      setTimeout(() => {
-        window.open(waUrl, '_blank');
-      }, 150);
+      window.location.href = waUrl;
     }
   </script>
 </head>
@@ -157,15 +157,15 @@
     <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/1.webp" alt="Image 1"></a></div>
     <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/2.webp" alt="Image 2"></a></div>
     <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/3.webp" alt="Image 3"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/4.gif" alt="Image 4"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/4.webp" alt="Image 4"></a></div>
     <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/5.webp" alt="Image 5"></a></div>
     <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/6.webp" alt="Image 6"></a></div>
     <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/7.webp" alt="Image 7"></a></div>
     <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/8.webp" alt="Image 8"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/9.gif" alt="Image 9"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/10.gif" alt="Image 10"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/9.webp" alt="Image 9"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/10.webp" alt="Image 10"></a></div>
     <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/11.webp" alt="Image 11"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/12.JPEG" alt="Image 12"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/12.webp" alt="Image 12"></a></div>
   </div>
 
 </body>
