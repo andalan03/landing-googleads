@@ -50,37 +50,50 @@
     }
   </style>
 
-  <!-- SCRIPT TRACKING KONVERSI OFFLINE & REDIRECT AMAN -->
+  <!-- SCRIPT TRACKING KOMPATIBEL BROWSER LAMA (ES5) -->
   <script>
-    const GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbw1ASwQnLVm-sAjf-v7k9Kftdr0yrP_UOgv7jKGfATEL2wUpqCf0Qc0__BlsHage1Aw/exec";
-    const WA_NUMBER = "6282277790619";
-    const WA_TEXT = "Halo Kak, saya berminat dengan produknya.";
+    var GOOGLE_SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbw1ASwQnLVm-sAjf-v7k9Kftdr0yrP_UOgv7jKGfATEL2wUpqCf0Qc0__BlsHage1Aw/exec";
+    var WA_NUMBER = "6282277790619";
+    var WA_TEXT = "Halo Kak, saya berminat dengan produknya.";
 
-    let visitorDataCache = { ip: '-', city: '-' };
+    var visitorDataCache = { ip: '-', city: '-' };
 
-    window.addEventListener('DOMContentLoaded', () => {
-      fetch('https://ipapi.co/json/')
-        .then(res => res.json())
-        .then(data => {
-          visitorDataCache.ip = data.ip || '-';
-          visitorDataCache.city = (data.city && data.region) ? `${data.city}, ${data.region}` : (data.city || '-');
-        })
-        .catch(err => console.log('IP fetch failed:', err));
-    });
+    // Cek dukungan fetch untuk browser lama
+    if (window.fetch) {
+      window.addEventListener('DOMContentLoaded', function() {
+        fetch('https://ipapi.co/json/')
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            visitorDataCache.ip = data.ip || '-';
+            visitorDataCache.city = (data.city && data.region) ? (data.city + ', ' + data.region) : (data.city || '-');
+          })
+          .catch(function(err) { console.log('IP fetch failed:', err); });
+      });
+    }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    function getParam(key) {
-      let val = urlParams.get(key);
+    // Fungsi pengurai URL manual yang aman untuk browser lama (pengganti URLSearchParams)
+    function getQueryParam(key) {
+      var match = RegExp('[?&]' + key + '=([^&]*)').exec(window.location.search);
+      var val = match && decodeURIComponent(match[1].replace(/\+/g, ' '));
       if (val) {
-        sessionStorage.setItem('track_' + key, val);
+        try {
+          sessionStorage.setItem('track_' + key, val);
+        } catch(e) {}
         return val;
       }
-      return sessionStorage.getItem('track_' + key) || '-';
+      try {
+        var stored = sessionStorage.getItem('track_' + key);
+        return stored ? stored : '-';
+      } catch(e) {
+        return '-';
+      }
     }
 
     function parseUA() {
-      const ua = navigator.userAgent;
-      let os = "Unknown OS", browser = "Unknown Browser", model = "Desktop/Generic";
+      var ua = navigator.userAgent;
+      var os = "Unknown OS";
+      var browser = "Unknown Browser";
+      var model = "Desktop/Generic";
 
       if (/windows nt/i.test(ua)) os = "Windows";
       else if (/android/i.test(ua)) os = "Android";
@@ -94,39 +107,42 @@
       if (/iphone/i.test(ua)) model = "Apple iPhone";
       else if (/ipad/i.test(ua)) model = "Apple iPad";
       else if (/android/i.test(ua)) {
-        const match = ua.match(/Android\s+[\d\.]+;\s*([^;\)]+)/i);
+        var match = ua.match(/Android\s+[\d\.]+;\s*([^;\)]+)/i);
         model = match ? match[1] : "Android Device";
       }
 
-      return { os, browser, model };
+      return { os: os, browser: browser, model: model };
     }
 
     function trackAndRedirect(event) {
-      if (event) event.preventDefault();
+      if (event) {
+        if (event.preventDefault) event.preventDefault();
+        else event.returnValue = false;
+      }
 
-      const uaData = parseUA();
-      const now = new Date();
-      const clickId = "CLK-" + now.getTime() + "-" + Math.floor(Math.random() * 1000);
-      const formattedDate = now.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB";
-      const perangkatBrowser = `${uaData.model} / ${uaData.browser} (${uaData.os})`;
+      var uaData = parseUA();
+      var now = new Date();
+      var clickId = "CLK-" + now.getTime() + "-" + Math.floor(Math.random() * 1000);
+      var formattedDate = now.toLocaleString ? now.toLocaleString() : now.toString();
+      var perangkatBrowser = uaData.model + " / " + uaData.browser + " (" + uaData.os + ")";
 
-      const payload = {
+      var payload = {
         clickId: clickId,
         waktu: formattedDate,
-        gclid: getParam('gclid'),
-        gbraid: getParam('gbraid'),
-        wbraid: getParam('wbraid'),
-        campaignId: getParam('campaignid') || getParam('utm_campaign'),
-        adGroupId: getParam('adgroupid') || getParam('utm_content'),
-        keyword: getParam('keyword') || getParam('utm_term'),
-        matchType: getParam('matchtype'),
-        device: getParam('device') || (window.innerWidth <= 768 ? 'Mobile' : 'Desktop'),
+        gclid: getQueryParam('gclid'),
+        gbraid: getQueryParam('gbraid'),
+        wbraid: getQueryParam('wbraid'),
+        campaignId: getQueryParam('campaignid') || getQueryParam('utm_campaign'),
+        adGroupId: getQueryParam('adgroupid') || getQueryParam('utm_content'),
+        keyword: getQueryParam('keyword') || getQueryParam('utm_term'),
+        matchType: getQueryParam('matchtype'),
+        device: getQueryParam('device') || (window.innerWidth <= 768 ? 'Mobile' : 'Desktop'),
         modelDevice: uaData.model,
         browser: uaData.browser,
         os: uaData.os,
-        screen: window.screen.width + "x" + window.screen.height,
-        bahasa: navigator.language || '-',
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '-',
+        screen: (window.screen ? window.screen.width + "x" + window.screen.height : '-'),
+        bahasa: navigator.language || navigator.userLanguage || '-',
+        timezone: '-',
         landingPage: window.location.href,
         referrer: document.referrer || 'Direct',
         nomorWA: WA_NUMBER,
@@ -138,34 +154,43 @@
         perangkatBrowser: perangkatBrowser
       };
 
-      // Kirim data latar belakang via Image Beacon
+      // Konversi payload ke string query secara manual (kompatibel ES5)
+      var queryParts = [];
+      for (var key in payload) {
+        if (payload.hasOwnProperty(key)) {
+          queryParts.push(encodeURIComponent(key) + "=" + encodeURIComponent(payload[key]));
+        }
+      }
+      var queryString = queryParts.join("&");
+
+      // Kirim data latar belakang menggunakan Image Beacon
       if (GOOGLE_SHEET_WEBHOOK_URL) {
-        const queryString = new URLSearchParams(payload).toString();
-        const beacon = new Image();
+        var beacon = new Image();
         beacon.src = GOOGLE_SHEET_WEBHOOK_URL + "?" + queryString;
       }
 
-      // Alihkan langsung ke WhatsApp secara instan tanpa jeda agar lolos dari blokir browser lama
-      const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_TEXT)}`;
+      // Alihkan langsung ke WhatsApp
+      var waUrl = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(WA_TEXT);
       window.location.href = waUrl;
+      return false;
     }
   </script>
 </head>
 <body>
 
   <div class="image-container">
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/1.webp" alt="Image 1"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/2.webp" alt="Image 2"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/3.webp" alt="Image 3"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/4.webp" alt="Image 4"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/5.webp" alt="Image 5"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/6.webp" alt="Image 6"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/7.webp" alt="Image 7"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/8.webp" alt="Image 8"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/9.webp" alt="Image 9"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/10.webp" alt="Image 10"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/11.webp" alt="Image 11"></a></div>
-    <div class="img-wrapper"><a href="#" onclick="trackAndRedirect(event)"><img src="img/12.webp" alt="Image 12"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/1.webp" alt="Image 1"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/2.webp" alt="Image 2"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/3.webp" alt="Image 3"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/4.webp" alt="Image 4"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/5.webp" alt="Image 5"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/6.webp" alt="Image 6"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/7.webp" alt="Image 7"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/8.webp" alt="Image 8"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/9.webp" alt="Image 9"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/10.webp" alt="Image 10"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/11.webp" alt="Image 11"></a></div>
+    <div class="img-wrapper"><a href="#" onclick="return trackAndRedirect(event);"><img src="img/12.webp" alt="Image 12"></a></div>
   </div>
 
 </body>
